@@ -1,0 +1,651 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+    <Schema Namespace="db_gamedbModel.Store" Provider="MySql.Data.MySqlClient" ProviderManifestToken="5.7" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="tbl_actions">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="tinyint" Nullable="false" />
+          <Property Name="weakTo" Type="tinyint" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tbl_game">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="gameState" Type="tinyint" Nullable="false" />
+          <Property Name="resetNumber" Type="int" Nullable="false" />
+          <Property Name="roundNumber" Type="smallint" />
+          <Property Name="stateStartTime" Type="datetime" Precision="0" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="gameStartTime" Type="datetime" Precision="0" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="gameEndTime" Type="datetime" Precision="0" />
+        </EntityType>
+        <EntityType Name="tbl_player">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="uname" Type="varchar" MaxLength="16" Nullable="false" />
+          <Property Name="pword" Type="varchar" MaxLength="16" Nullable="false" />
+          <Property Name="currentWinStreak" Type="smallint" Nullable="false" />
+          <Property Name="highestWinStreak" Type="smallint" Nullable="false" />
+          <Property Name="failedLoginAttempts" Type="tinyint" Nullable="false" />
+          <Property Name="lastActivityTime" Type="datetime" Precision="0" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="isOnline" Type="bool" Nullable="false" />
+          <Property Name="isLocked" Type="bool" Nullable="false" />
+          <Property Name="isAdmin" Type="bool" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tbl_player_actions">
+          <Key>
+            <PropertyRef Name="playerInstanceID" />
+            <PropertyRef Name="resetNumber" />
+            <PropertyRef Name="roundNumber" />
+          </Key>
+          <Property Name="playerInstanceID" Type="int" Nullable="false" />
+          <Property Name="resetNumber" Type="int" Nullable="false" />
+          <Property Name="roundNumber" Type="smallint" Nullable="false" />
+          <Property Name="playerAction" Type="tinyint" />
+        </EntityType>
+        <EntityType Name="tbl_player_game">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="int" StoreGeneratedPattern="Identity" Nullable="false" />
+          <Property Name="pID" Type="int" Nullable="false" />
+          <Property Name="gID" Type="int" Nullable="false" />
+          <Property Name="isHost" Type="bool" Nullable="false" />
+          <Property Name="playerState" Type="tinyint" Nullable="false" />
+          <Property Name="joinTime" Type="datetime" Precision="0" StoreGeneratedPattern="Identity" Nullable="false" />
+        </EntityType>
+        <Association Name="fk_action">
+          <End Role="tbl_actions" Type="Self.tbl_actions" Multiplicity="0..1" />
+          <End Role="tbl_player_actions" Type="Self.tbl_player_actions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_actions">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_player_actions">
+              <PropertyRef Name="playerAction" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_gameID">
+          <End Role="tbl_game" Type="Self.tbl_game" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="tbl_player_game" Type="Self.tbl_player_game" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_game">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_player_game">
+              <PropertyRef Name="gID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_playerID">
+          <End Role="tbl_player" Type="Self.tbl_player" Multiplicity="1" />
+          <End Role="tbl_player_game" Type="Self.tbl_player_game" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_player">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_player_game">
+              <PropertyRef Name="pID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_playerInstanceID">
+          <End Role="tbl_player_game" Type="Self.tbl_player_game" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="tbl_player_actions" Type="Self.tbl_player_actions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_player_game">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_player_actions">
+              <PropertyRef Name="playerInstanceID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_weakTo">
+          <End Role="tbl_actions" Type="Self.tbl_actions" Multiplicity="1" />
+          <End Role="tbl_actions1" Type="Self.tbl_actions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_actions">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_actions1">
+              <PropertyRef Name="weakTo" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Function Name="intf_checkAccountLocked" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_id" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_checkAccountOnline" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_id" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_comparePassword" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_id" Type="int" Mode="In" />
+          <Parameter Name="prm_pWord" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="intf_createPlayer" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_uName" Type="varchar" Mode="In" />
+          <Parameter Name="prm_pWord" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="intf_deletePlayer" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_playerID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_endGame" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_gameID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_findPlayerAccount" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_uName" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="intf_getCountPerAction" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_gameID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_getGameInfo" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_gameID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_getGameState" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_gameID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_getInstanceInfo" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_instanceID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_getInstanceSelection" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_instanceID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_getPlayerGameMoveSelectionState" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_gameID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_getPlayerGameState" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_gameID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_getPlayerInfo" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_playerID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_getPlayerList" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb" />
+        <Function Name="intf_getRunningGames" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb" />
+        <Function Name="intf_initiateGame" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_playerID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_isPlayerAdmin" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_playerID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_newPlayerInstance" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_playerID" Type="int" Mode="In" />
+          <Parameter Name="prm_gameID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_playerActionRegister" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_instID" Type="int" Mode="In" />
+          <Parameter Name="prm_action" Type="tinyint" Mode="In" />
+        </Function>
+        <Function Name="intf_playerDropout" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_instanceID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_playerLogin" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_playerID" Type="int" Mode="In" />
+          <Parameter Name="prm_pWord" Type="varchar" Mode="In" />
+        </Function>
+        <Function Name="intf_playerLogout" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_playerID" Type="int" Mode="In" />
+        </Function>
+        <Function Name="intf_updatePlayer" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_playerID" Type="int" Mode="In" />
+          <Parameter Name="prm_uName" Type="varchar" Mode="In" />
+          <Parameter Name="prm_pWord" Type="varchar" Mode="In" />
+          <Parameter Name="prm_currentWinStreak" Type="smallint" Mode="In" />
+          <Parameter Name="prm_highestWinStreak" Type="smallint" Mode="In" />
+          <Parameter Name="prm_isLocked" Type="tinyint" Mode="In" />
+          <Parameter Name="prm_isAdmin" Type="tinyint" Mode="In" />
+        </Function>
+        <Function Name="intf_updatePlayerActivityTime" Aggregate="false" BuiltIn="false" NiladicFunction="false" IsComposable="false" ParameterTypeSemantics="AllowImplicitConversion" Schema="db_gamedb">
+          <Parameter Name="prm_playerID" Type="int" Mode="In" />
+        </Function>
+        <EntityContainer Name="db_gamedbModelStoreContainer">
+          <EntitySet Name="tbl_actions" EntityType="Self.tbl_actions" Schema="db_gamedb" store:Type="Tables" />
+          <EntitySet Name="tbl_game" EntityType="Self.tbl_game" Schema="db_gamedb" store:Type="Tables" />
+          <EntitySet Name="tbl_player" EntityType="Self.tbl_player" Schema="db_gamedb" store:Type="Tables" />
+          <EntitySet Name="tbl_player_actions" EntityType="Self.tbl_player_actions" Schema="db_gamedb" store:Type="Tables" />
+          <EntitySet Name="tbl_player_game" EntityType="Self.tbl_player_game" Schema="db_gamedb" store:Type="Tables" />
+          <AssociationSet Name="fk_action" Association="Self.fk_action">
+            <End Role="tbl_actions" EntitySet="tbl_actions" />
+            <End Role="tbl_player_actions" EntitySet="tbl_player_actions" />
+          </AssociationSet>
+          <AssociationSet Name="fk_gameID" Association="Self.fk_gameID">
+            <End Role="tbl_game" EntitySet="tbl_game" />
+            <End Role="tbl_player_game" EntitySet="tbl_player_game" />
+          </AssociationSet>
+          <AssociationSet Name="fk_playerID" Association="Self.fk_playerID">
+            <End Role="tbl_player" EntitySet="tbl_player" />
+            <End Role="tbl_player_game" EntitySet="tbl_player_game" />
+          </AssociationSet>
+          <AssociationSet Name="fk_playerInstanceID" Association="Self.fk_playerInstanceID">
+            <End Role="tbl_player_game" EntitySet="tbl_player_game" />
+            <End Role="tbl_player_actions" EntitySet="tbl_player_actions" />
+          </AssociationSet>
+          <AssociationSet Name="fk_weakTo" Association="Self.fk_weakTo">
+            <End Role="tbl_actions" EntitySet="tbl_actions" />
+            <End Role="tbl_actions1" EntitySet="tbl_actions" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema></edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="db_gamedbModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="tbl_actions">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="SByte" Nullable="false" />
+          <Property Name="weakTo" Type="SByte" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tbl_game">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="gameState" Type="SByte" Nullable="false" />
+          <Property Name="resetNumber" Type="Int32" Nullable="false" />
+          <Property Name="roundNumber" Type="Int16" />
+          <Property Name="stateStartTime" Type="DateTime" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="gameStartTime" Type="DateTime" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="gameEndTime" Type="DateTime" />
+        </EntityType>
+        <EntityType Name="tbl_player">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="uname" Type="String" MaxLength="16" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="pword" Type="String" MaxLength="16" FixedLength="false" Unicode="false" Nullable="false" />
+          <Property Name="currentWinStreak" Type="Int16" Nullable="false" />
+          <Property Name="highestWinStreak" Type="Int16" Nullable="false" />
+          <Property Name="failedLoginAttempts" Type="SByte" Nullable="false" />
+          <Property Name="lastActivityTime" Type="DateTime" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="isOnline" Type="Boolean" Nullable="false" />
+          <Property Name="isLocked" Type="Boolean" Nullable="false" />
+          <Property Name="isAdmin" Type="Boolean" Nullable="false" />
+        </EntityType>
+        <EntityType Name="tbl_player_actions">
+          <Key>
+            <PropertyRef Name="playerInstanceID" />
+            <PropertyRef Name="resetNumber" />
+            <PropertyRef Name="roundNumber" />
+          </Key>
+          <Property Name="playerInstanceID" Type="Int32" Nullable="false" />
+          <Property Name="resetNumber" Type="Int32" Nullable="false" />
+          <Property Name="roundNumber" Type="Int16" Nullable="false" />
+          <Property Name="playerAction" Type="SByte" />
+        </EntityType>
+        <EntityType Name="tbl_player_game">
+          <Key>
+            <PropertyRef Name="id" />
+          </Key>
+          <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+          <Property Name="pID" Type="Int32" Nullable="false" />
+          <Property Name="gID" Type="Int32" Nullable="false" />
+          <Property Name="isHost" Type="Boolean" Nullable="false" />
+          <Property Name="playerState" Type="SByte" Nullable="false" />
+          <Property Name="joinTime" Type="DateTime" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
+        </EntityType>
+        <Association Name="fk_action">
+          <End Role="tbl_actions" Type="Self.tbl_actions" Multiplicity="0..1" />
+          <End Role="tbl_player_actions" Type="Self.tbl_player_actions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_actions">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_player_actions">
+              <PropertyRef Name="playerAction" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_weakTo">
+          <End Role="tbl_actions" Type="Self.tbl_actions" Multiplicity="1" />
+          <End Role="tbl_actions1" Type="Self.tbl_actions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_actions">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_actions1">
+              <PropertyRef Name="weakTo" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_gameID">
+          <End Role="tbl_game" Type="Self.tbl_game" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="tbl_player_game" Type="Self.tbl_player_game" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_game">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_player_game">
+              <PropertyRef Name="gID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_playerID">
+          <End Role="tbl_player" Type="Self.tbl_player" Multiplicity="1" />
+          <End Role="tbl_player_game" Type="Self.tbl_player_game" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_player">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_player_game">
+              <PropertyRef Name="pID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <Association Name="fk_playerInstanceID">
+          <End Role="tbl_player_game" Type="Self.tbl_player_game" Multiplicity="1">
+            <OnDelete Action="Cascade" />
+          </End>
+          <End Role="tbl_player_actions" Type="Self.tbl_player_actions" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="tbl_player_game">
+              <PropertyRef Name="id" />
+            </Principal>
+            <Dependent Role="tbl_player_actions">
+              <PropertyRef Name="playerInstanceID" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="GameDatabseEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="tbl_actions" EntityType="Self.tbl_actions" />
+          <EntitySet Name="tbl_game" EntityType="Self.tbl_game" />
+          <EntitySet Name="tbl_player" EntityType="Self.tbl_player" />
+          <EntitySet Name="tbl_player_actions" EntityType="Self.tbl_player_actions" />
+          <EntitySet Name="tbl_player_game" EntityType="Self.tbl_player_game" />
+          <AssociationSet Name="fk_action" Association="Self.fk_action">
+            <End Role="tbl_actions" EntitySet="tbl_actions" />
+            <End Role="tbl_player_actions" EntitySet="tbl_player_actions" />
+          </AssociationSet>
+          <AssociationSet Name="fk_weakTo" Association="Self.fk_weakTo">
+            <End Role="tbl_actions" EntitySet="tbl_actions" />
+            <End Role="tbl_actions1" EntitySet="tbl_actions" />
+          </AssociationSet>
+          <AssociationSet Name="fk_gameID" Association="Self.fk_gameID">
+            <End Role="tbl_game" EntitySet="tbl_game" />
+            <End Role="tbl_player_game" EntitySet="tbl_player_game" />
+          </AssociationSet>
+          <AssociationSet Name="fk_playerID" Association="Self.fk_playerID">
+            <End Role="tbl_player" EntitySet="tbl_player" />
+            <End Role="tbl_player_game" EntitySet="tbl_player_game" />
+          </AssociationSet>
+          <AssociationSet Name="fk_playerInstanceID" Association="Self.fk_playerInstanceID">
+            <End Role="tbl_player_game" EntitySet="tbl_player_game" />
+            <End Role="tbl_player_actions" EntitySet="tbl_player_actions" />
+          </AssociationSet>
+          <FunctionImport Name="intf_getCountPerAction" ReturnType="Collection(db_gamedbModel.intf_getCountPerAction_Result)">
+          <Parameter Name="prm_gameID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_getGameInfo" ReturnType="Collection(db_gamedbModel.intf_getGameInfo_Result)">
+          <Parameter Name="prm_gameID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_getPlayerGameMoveSelectionState" ReturnType="Collection(db_gamedbModel.intf_getPlayerGameMoveSelectionState_Result)">
+          <Parameter Name="prm_gameID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_getPlayerGameState" ReturnType="Collection(db_gamedbModel.intf_getPlayerGameState_Result)">
+          <Parameter Name="prm_gameID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_getPlayerInfo" EntitySet="tbl_player" ReturnType="Collection(db_gamedbModel.tbl_player)">
+          <Parameter Name="prm_playerID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_getPlayerList" EntitySet="tbl_player" ReturnType="Collection(db_gamedbModel.tbl_player)" />
+          <FunctionImport Name="intf_getRunningGames" EntitySet="tbl_game" ReturnType="Collection(db_gamedbModel.tbl_game)" />
+          <FunctionImport Name="intf_initiateGame" ReturnType="Collection(db_gamedbModel.intf_initiateGame_Result)">
+          <Parameter Name="prm_playerID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_findPlayerAccount" ReturnType="Collection(Int32)">
+          <Parameter Name="prm_uName" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="intf_checkAccountLocked" ReturnType="Collection(Boolean)">
+          <Parameter Name="prm_id" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_comparePassword" ReturnType="Collection(Boolean)">
+            <Parameter Name="prm_id" Mode="In" Type="Int32" />
+            <Parameter Name="prm_pWord" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="intf_createPlayer" ReturnType="Collection(Int32)">
+            <Parameter Name="prm_uName" Mode="In" Type="String" />
+            <Parameter Name="prm_pWord" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="intf_deletePlayer" ReturnType="Collection(Boolean)">
+          <Parameter Name="prm_playerID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_endGame" ReturnType="Collection(Boolean)">
+          <Parameter Name="prm_gameID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_getGameState" ReturnType="Collection(Byte)">
+          <Parameter Name="prm_gameID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_isPlayerAdmin" ReturnType="Collection(Boolean)">
+          <Parameter Name="prm_playerID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_newPlayerInstance" ReturnType="Collection(Int32)">
+            <Parameter Name="prm_playerID" Mode="In" Type="Int32" />
+            <Parameter Name="prm_gameID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_playerActionRegister" ReturnType="Collection(Boolean)">
+            <Parameter Name="prm_instID" Mode="In" Type="Int32" />
+            <Parameter Name="prm_action" Mode="In" Type="SByte" />
+          </FunctionImport>
+          <FunctionImport Name="intf_playerDropout" ReturnType="Collection(Boolean)">
+          <Parameter Name="prm_instanceID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_playerLogin" ReturnType="Collection(Boolean)">
+            <Parameter Name="prm_playerID" Mode="In" Type="Int32" />
+            <Parameter Name="prm_pWord" Mode="In" Type="String" />
+          </FunctionImport>
+          <FunctionImport Name="intf_playerLogout" ReturnType="Collection(Boolean)">
+          <Parameter Name="prm_playerID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_updatePlayer" ReturnType="Collection(Boolean)">
+            <Parameter Name="prm_playerID" Mode="In" Type="Int32" />
+            <Parameter Name="prm_uName" Mode="In" Type="String" />
+            <Parameter Name="prm_pWord" Mode="In" Type="String" />
+            <Parameter Name="prm_currentWinStreak" Mode="In" Type="Int16" />
+            <Parameter Name="prm_highestWinStreak" Mode="In" Type="Int16" />
+            <Parameter Name="prm_isLocked" Mode="In" Type="SByte" />
+            <Parameter Name="prm_isAdmin" Mode="In" Type="SByte" />
+          </FunctionImport>
+          <FunctionImport Name="intf_updatePlayerActivityTime" ReturnType="Collection(Boolean)">
+          <Parameter Name="prm_playerID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_checkAccountOnline" ReturnType="Collection(Boolean)">
+          <Parameter Name="prm_id" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_getInstanceInfo" EntitySet="tbl_player_game" ReturnType="Collection(db_gamedbModel.tbl_player_game)">
+          <Parameter Name="prm_instanceID" Mode="In" Type="Int32" />
+          </FunctionImport>
+          <FunctionImport Name="intf_getInstanceSelection" ReturnType="Collection(Byte)">
+            <Parameter Name="prm_instanceID" Mode="In" Type="Int32" />
+          </FunctionImport>
+        </EntityContainer>
+        <ComplexType Name="intf_getCountPerAction_Result" >
+          <Property Type="SByte" Name="Action" Nullable="false" />
+          <Property Type="Int32" Name="Count" Nullable="false" />
+        </ComplexType>
+        <ComplexType Name="intf_getGameInfo_Result" >
+          <Property Type="String" Name="host_name" Nullable="false" />
+          <Property Type="Int32" Name="player_count" Nullable="false" />
+        </ComplexType>
+        <ComplexType Name="intf_getPlayerGameMoveSelectionState_Result" >
+          <Property Type="String" Name="player_name" Nullable="false" />
+          <Property Type="Byte" Name="player_state" Nullable="false" />
+          <Property Type="Boolean" Name="player_hasMoved" Nullable="false" />
+        </ComplexType>
+        <ComplexType Name="intf_getPlayerGameState_Result" >
+          <Property Type="String" Name="player_name" Nullable="false" />
+          <Property Type="Byte" Name="player_state" Nullable="false" />
+        </ComplexType>
+        <ComplexType Name="intf_initiateGame_Result" >
+          <Property Type="Int32" Name="game_id" Nullable="true" />
+          <Property Type="Int32" Name="instance_id" Nullable="true" />
+        </ComplexType>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="db_gamedbModelStoreContainer" CdmEntityContainer="GameDatabseEntities">
+          <EntitySetMapping Name="tbl_actions">
+            <EntityTypeMapping TypeName="db_gamedbModel.tbl_actions">
+              <MappingFragment StoreEntitySet="tbl_actions">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="weakTo" ColumnName="weakTo" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbl_game">
+            <EntityTypeMapping TypeName="db_gamedbModel.tbl_game">
+              <MappingFragment StoreEntitySet="tbl_game">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="gameState" ColumnName="gameState" />
+                <ScalarProperty Name="resetNumber" ColumnName="resetNumber" />
+                <ScalarProperty Name="roundNumber" ColumnName="roundNumber" />
+                <ScalarProperty Name="stateStartTime" ColumnName="stateStartTime" />
+                <ScalarProperty Name="gameStartTime" ColumnName="gameStartTime" />
+                <ScalarProperty Name="gameEndTime" ColumnName="gameEndTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbl_player">
+            <EntityTypeMapping TypeName="IsTypeOf(db_gamedbModel.tbl_player)">
+              <MappingFragment StoreEntitySet="tbl_player">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="isAdmin" ColumnName="isAdmin" />
+                <ScalarProperty Name="isLocked" ColumnName="isLocked" />
+                <ScalarProperty Name="isOnline" ColumnName="isOnline" />
+                <ScalarProperty Name="lastActivityTime" ColumnName="lastActivityTime" />
+                <ScalarProperty Name="failedLoginAttempts" ColumnName="failedLoginAttempts" />
+                <ScalarProperty Name="highestWinStreak" ColumnName="highestWinStreak" />
+                <ScalarProperty Name="currentWinStreak" ColumnName="currentWinStreak" />
+                <ScalarProperty Name="pword" ColumnName="pword" />
+                <ScalarProperty Name="uname" ColumnName="uname" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbl_player_actions">
+            <EntityTypeMapping TypeName="db_gamedbModel.tbl_player_actions">
+              <MappingFragment StoreEntitySet="tbl_player_actions">
+                <ScalarProperty Name="playerInstanceID" ColumnName="playerInstanceID" />
+                <ScalarProperty Name="resetNumber" ColumnName="resetNumber" />
+                <ScalarProperty Name="roundNumber" ColumnName="roundNumber" />
+                <ScalarProperty Name="playerAction" ColumnName="playerAction" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="tbl_player_game">
+            <EntityTypeMapping TypeName="db_gamedbModel.tbl_player_game">
+              <MappingFragment StoreEntitySet="tbl_player_game">
+                <ScalarProperty Name="id" ColumnName="id" />
+                <ScalarProperty Name="pID" ColumnName="pID" />
+                <ScalarProperty Name="gID" ColumnName="gID" />
+                <ScalarProperty Name="isHost" ColumnName="isHost" />
+                <ScalarProperty Name="playerState" ColumnName="playerState" />
+                <ScalarProperty Name="joinTime" ColumnName="joinTime" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <FunctionImportMapping FunctionImportName="intf_getCountPerAction" FunctionName="db_gamedbModel.Store.intf_getCountPerAction">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="db_gamedbModel.intf_getCountPerAction_Result" >
+                <ScalarProperty Name="Action" ColumnName="Action" />
+                <ScalarProperty Name="Count" ColumnName="Count" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="intf_getGameInfo" FunctionName="db_gamedbModel.Store.intf_getGameInfo">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="db_gamedbModel.intf_getGameInfo_Result" >
+                <ScalarProperty Name="host_name" ColumnName="host_name" />
+                <ScalarProperty Name="player_count" ColumnName="player_count" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="intf_getPlayerGameMoveSelectionState" FunctionName="db_gamedbModel.Store.intf_getPlayerGameMoveSelectionState">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="db_gamedbModel.intf_getPlayerGameMoveSelectionState_Result" >
+                <ScalarProperty Name="player_name" ColumnName="player_name" />
+                <ScalarProperty Name="player_state" ColumnName="player_state" />
+                <ScalarProperty Name="player_hasMoved" ColumnName="player_hasMoved" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="intf_getPlayerGameState" FunctionName="db_gamedbModel.Store.intf_getPlayerGameState">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="db_gamedbModel.intf_getPlayerGameState_Result" >
+                <ScalarProperty Name="player_name" ColumnName="player_name" />
+                <ScalarProperty Name="player_state" ColumnName="player_state" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="intf_getPlayerInfo" FunctionName="db_gamedbModel.Store.intf_getPlayerInfo">
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="intf_getPlayerList" FunctionName="db_gamedbModel.Store.intf_getPlayerList">
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="intf_getRunningGames" FunctionName="db_gamedbModel.Store.intf_getRunningGames">
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="intf_initiateGame" FunctionName="db_gamedbModel.Store.intf_initiateGame">
+            <ResultMapping>
+              <ComplexTypeMapping TypeName="db_gamedbModel.intf_initiateGame_Result" >
+                <ScalarProperty Name="game_id" ColumnName="game_id" />
+                <ScalarProperty Name="instance_id" ColumnName="instance_id" />
+              </ComplexTypeMapping>
+            </ResultMapping>
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="intf_findPlayerAccount" FunctionName="db_gamedbModel.Store.intf_findPlayerAccount" />
+          <FunctionImportMapping FunctionImportName="intf_checkAccountLocked" FunctionName="db_gamedbModel.Store.intf_checkAccountLocked" />
+          <FunctionImportMapping FunctionImportName="intf_comparePassword" FunctionName="db_gamedbModel.Store.intf_comparePassword" />
+          <FunctionImportMapping FunctionImportName="intf_createPlayer" FunctionName="db_gamedbModel.Store.intf_createPlayer" />
+          <FunctionImportMapping FunctionImportName="intf_deletePlayer" FunctionName="db_gamedbModel.Store.intf_deletePlayer" />
+          <FunctionImportMapping FunctionImportName="intf_endGame" FunctionName="db_gamedbModel.Store.intf_endGame" />
+          <FunctionImportMapping FunctionImportName="intf_getGameState" FunctionName="db_gamedbModel.Store.intf_getGameState" />
+          <FunctionImportMapping FunctionImportName="intf_isPlayerAdmin" FunctionName="db_gamedbModel.Store.intf_isPlayerAdmin" />
+          <FunctionImportMapping FunctionImportName="intf_newPlayerInstance" FunctionName="db_gamedbModel.Store.intf_newPlayerInstance" />
+          <FunctionImportMapping FunctionImportName="intf_playerActionRegister" FunctionName="db_gamedbModel.Store.intf_playerActionRegister" />
+          <FunctionImportMapping FunctionImportName="intf_playerDropout" FunctionName="db_gamedbModel.Store.intf_playerDropout" />
+          <FunctionImportMapping FunctionImportName="intf_playerLogin" FunctionName="db_gamedbModel.Store.intf_playerLogin" />
+          <FunctionImportMapping FunctionImportName="intf_playerLogout" FunctionName="db_gamedbModel.Store.intf_playerLogout" />
+          <FunctionImportMapping FunctionImportName="intf_updatePlayer" FunctionName="db_gamedbModel.Store.intf_updatePlayer" />
+          <FunctionImportMapping FunctionImportName="intf_updatePlayerActivityTime" FunctionName="db_gamedbModel.Store.intf_updatePlayerActivityTime" />
+          <FunctionImportMapping FunctionImportName="intf_checkAccountOnline" FunctionName="db_gamedbModel.Store.intf_checkAccountOnline" />
+          <FunctionImportMapping FunctionImportName="intf_getInstanceInfo" FunctionName="db_gamedbModel.Store.intf_getInstanceInfo">
+          </FunctionImportMapping>
+          <FunctionImportMapping FunctionImportName="intf_getInstanceSelection" FunctionName="db_gamedbModel.Store.intf_getInstanceSelection" />
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="true" />
+        <DesignerProperty Name="CodeGenerationStrategy" Value="None" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>
